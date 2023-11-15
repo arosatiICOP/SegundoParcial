@@ -2,7 +2,6 @@ package logica;
 
 public class Reservada implements Estado{
 
-
 	public void liberar(Mesa m) {
 		System.out.println("La mesa ha sido liberada con exito.");
 		m.setEstado(new Liberada());
