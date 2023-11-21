@@ -6,15 +6,18 @@ import java.util.Scanner;
 public class Mesa{
 	
 	private Estado estado;
-	private static int idMesa;
-	private int nroMesa;
+	private static int idMesa=0;
+	private int nroMesa=0;
 	private int capacidad;
 	private double consumo;
 	
 	public Mesa(){
+		/* Sacarle el comentario a procesos si quiere probar crear una mesa en el menu de la clase "Principal"
+		 , luego volver a comentar procesos para que funcione la opcion
+		"alta mesa" del submenu "gestion" de la interfaz "Menu"*/
 		this.estado = new Liberada();
 		nroMesa=++idMesa;
-		procesos();
+		//procesos();
 	}
 	
 	public Mesa(int capacidad) {

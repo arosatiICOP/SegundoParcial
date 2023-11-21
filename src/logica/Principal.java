@@ -2,12 +2,14 @@ package logica;
 
 import java.util.Scanner;
 
+import interfaz.Menu;
+
 public class Principal {
 
 	public static void main(String[] args) throws ExceptionEstado {
 		
 		Restaurante paucke = new Restaurante("Paucke ATENEO Inmaculada","General López 2545","Santa Fe");
-		
+		/*
 		Scanner ingresoDatos = new Scanner(System.in);
 		int eleccion;
 		System.out.println("Ingrese una opcion.");
@@ -57,5 +59,7 @@ public class Principal {
 		}
 		
 		ingresoDatos.close();
+		*/
+		new Menu().setVisible(true);
 	}
 }

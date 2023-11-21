@@ -13,8 +13,12 @@ public class Reserva {
 	private int cantCom;
 	private Mesa mesa;
 	
+	
 	public Reserva() {
-		procesos();
+		/* Sacarle el comentario a procesos si quiere probar crear una reserva en el menu de la clase "Principal"
+		 , luego volver a comentar procesos para que funcione la opcion
+		"registrar" del submenu "reserva" de la interfaz "Menu"*/
+		//procesos();
 	}
 	
 	public  void procesos() {

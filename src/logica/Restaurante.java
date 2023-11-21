@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
+
 import java.util.Iterator;
 
 public class Restaurante {
@@ -129,7 +130,7 @@ public class Restaurante {
 	        }
 	    }*/
 	
-	private void mostrarMesasLiberadas(ArrayList<Mesa> listaMesas) {
+	public void mostrarMesasLiberadas(ArrayList<Mesa> listaMesas) {
 		//this.listaMesas=listaMesas;
 	    System.out.println("Mesas Liberadas:");
 	    for (Mesa mesa : listaMesas) {
@@ -218,7 +219,7 @@ public class Restaurante {
 	    }
 	}
 	
-    private Mesa buscarMesaPorNumero(int numeroMesa) {
+    public Mesa buscarMesaPorNumero(int numeroMesa) {
         for (Mesa m : listaMesas) {
             if (m.getNroMesa() == numeroMesa) {
                 return m;
@@ -409,5 +410,19 @@ public class Restaurante {
 
 	public void setListaReservas(ArrayList<Reserva> listaReservas) {
 		this.listaReservas = listaReservas;
+	}
+	
+	public void registrarEnBD(Reserva r) {
+
+		listaReservas.add(r);
+	}
+	
+	public void registrarEnBD(Mesa m) {
+
+		listaMesas.add(m);
+	}
+
+	public void borrarMesa(int nroMesa) {
+		listaMesas.remove(nroMesa);	
 	}
 }
