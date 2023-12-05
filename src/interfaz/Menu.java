@@ -3,17 +3,21 @@ package interfaz;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import baseDatos.AccesoDatos;
+import baseDatos.MesaBD;
 import logica.Restaurante;
 
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JLabel;
+import java.awt.Font;
 
 public class Menu extends JFrame implements ActionListener{
 
@@ -21,13 +25,20 @@ public class Menu extends JFrame implements ActionListener{
 	private JPanel contentPane;
 	private JMenuItem mntmVistaActual;
 	private JMenuItem mntmAcercaDe;
-	private JMenuItem mntmVistaXFecha;
+	private JMenuItem mntmLambdaM;
 	private JMenuItem mntmSalir;
 	private Restaurante restaurante;
 	private JMenuItem mntmBajaMesa;
 	private JMenuItem mntmAltaMesa;
 	private JMenuItem mntmRegistrar;
-	private AccesoDatos inicioCon;
+	private JMenuItem mntmOcuparM;
+	private JMenuItem mntmLiberarM;
+	private MesaBD mesaDB;
+	private int idResto;
+	private JMenuItem mntmMesasRent;
+	private JMenuItem mntmLibres;
+	private JMenuItem mntmOcupadas;
+	private JMenuItem mntmReservadas;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -43,12 +54,9 @@ public class Menu extends JFrame implements ActionListener{
 	}
 
 	public Menu() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setTitle("Menu principal");
 		setLocationRelativeTo(this);
-		restaurante = new Restaurante();
-		inicioCon = new AccesoDatos();
 		setSize(450, 300);
+		mesaDB = new MesaBD();
 		procesos();
 	}
 	
@@ -60,7 +68,7 @@ public class Menu extends JFrame implements ActionListener{
 		contentPane.setLayout(null);
 		
 		JMenuBar menuBar = new JMenuBar();
-		menuBar.setBounds(0, 0, 210, 25);
+		menuBar.setBounds(0, 0, 434, 25);
 		contentPane.add(menuBar);
 		
 		JMenu mnReserva = new JMenu("Reserva");
@@ -77,9 +85,18 @@ public class Menu extends JFrame implements ActionListener{
 		mntmAltaMesa.addActionListener(this);
 		mnGestion.add(mntmAltaMesa);
 		
+		mntmOcuparM = new JMenuItem("Ocupar Mesa");
+		mntmOcuparM.addActionListener(this);
+		mnGestion.add(mntmOcuparM);
+		
 		mntmBajaMesa = new JMenuItem("Baja Mesa");
 		mntmBajaMesa.addActionListener(this);
+		
+		mntmLiberarM = new JMenuItem("Liberar Mesa");
+		mnGestion.add(mntmLiberarM);
+		mntmLiberarM.addActionListener(this);
 		mnGestion.add(mntmBajaMesa);
+		
 		
 		JMenu mnInfo = new JMenu("Info");
 		menuBar.add(mnInfo);
@@ -88,8 +105,28 @@ public class Menu extends JFrame implements ActionListener{
 		mntmVistaActual.addActionListener(this);
 		mnInfo.add(mntmVistaActual);
 		
-		mntmVistaXFecha = new JMenuItem("Vista por Fecha");
-		mnInfo.add(mntmVistaXFecha);
+		mntmLambdaM = new JMenuItem("Mesas Lambda");
+		mntmLambdaM.addActionListener(this);
+		mnInfo.add(mntmLambdaM);
+		
+		mntmMesasRent = new JMenuItem("Mesas Rentables");
+		mntmMesasRent.addActionListener(this);
+		
+		JMenu mnInfoMesas = new JMenu("InfoMesas Lambda");
+		mnInfo.add(mnInfoMesas);
+		
+		mntmLibres = new JMenuItem("Libres");
+		mntmLibres.addActionListener(this);
+		mnInfoMesas.add(mntmLibres);
+		
+		mntmOcupadas = new JMenuItem("Ocupadas");
+		mntmOcupadas.addActionListener(this);
+		mnInfoMesas.add(mntmOcupadas);
+		
+		mntmReservadas = new JMenuItem("Reservadas");
+		mntmReservadas.addActionListener(this);
+		mnInfoMesas.add(mntmReservadas);
+		mnInfo.add(mntmMesasRent);
 		
 		mntmAcercaDe = new JMenuItem("Acerca De");
 		mntmAcercaDe.addActionListener(this);
@@ -98,26 +135,33 @@ public class Menu extends JFrame implements ActionListener{
 		mntmSalir = new JMenuItem("Salir");
 		mntmSalir.addActionListener(this);
 		menuBar.add(mntmSalir);
+		
+		JLabel lblTitulo = new JLabel("Menu Principal");
+		lblTitulo.setFont(new Font("Tahoma", Font.PLAIN, 24));
+		lblTitulo.setBounds(139, 110, 210, 35);
+		contentPane.add(lblTitulo);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
 		
 		if(e.getSource()==mntmRegistrar) {
 			RegistrarReserva nuevoR = new RegistrarReserva();
-			nuevoR.mandarDatos(restaurante);
-			nuevoR.abrirConexion(inicioCon);
+			nuevoR.mandarDatos(this.restaurante);
 			nuevoR.setVisible(true);
 		}
 		else if(e.getSource()==mntmAltaMesa) {
 			RegistrarMesa nuevaM = new RegistrarMesa();
-			nuevaM.mandarDatos(restaurante);
-			nuevaM.abrirConexion(inicioCon);
+			nuevaM.mandarDatos(this.restaurante);
 			nuevaM.setVisible(true);
 		}
 		else if(e.getSource()==mntmBajaMesa) {
-			BorrarMesa borrarM = new BorrarMesa();
-			borrarM.mandarDatos(restaurante);
-			borrarM.abrirConexion(inicioCon);
+			DeshabMesa borrarM = new DeshabMesa();
+			borrarM.mandarDatos(this.restaurante);
+			try {
+				borrarM.llenarTablaMesasL();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 			borrarM.setVisible(true);
 		}
 		else if(e.getSource()==mntmAcercaDe) {
@@ -125,18 +169,62 @@ public class Menu extends JFrame implements ActionListener{
 			a.setVisible(true);
 		}
 		else if(e.getSource()==mntmVistaActual) {
-			VistaActualM vistaA = new VistaActualM();
-			VistaActualR vistaR = new VistaActualR();
-			vistaA.mandarDatos(restaurante);
-			vistaR.mandarDatos(restaurante);
-			vistaA.llenarTabla();
-			vistaR.llenarTabla();
-			vistaA.setVisible(true);
+			VistaActualRyM vistaR = new VistaActualRyM();
+			vistaR.mandarDatos(this.restaurante);
+			try {
+				vistaR.llenarTablaM();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			vistaR.llenarTablaR();
 			vistaR.setVisible(true);
 		}
 		
-		else if(e.getSource()==mntmSalir) {
-			System.exit(0);
+		else if (e.getSource() == mntmOcuparM) {
+		    try {
+		        OcuparMesa ocupar = new OcuparMesa();
+		        ocupar.mandarDatos(this.restaurante);
+		        ocupar.llenarTablaMesaR();
+		        ocupar.setVisible(true);
+		    } catch (SQLException e1) {
+		        e1.printStackTrace();
+		    }
 		}
+		else if (e.getSource() == mntmLiberarM) {
+		    try {
+		        LiberarMesa l = new LiberarMesa();
+		        l.mandarDatos(this.restaurante);
+		        l.llenarTablaMesaO();
+		        l.setVisible(true);
+		    } catch (SQLException e1) {
+		        e1.printStackTrace();
+		    }
+		}
+		
+		else if (e.getSource() == mntmLambdaM) {
+		    mesaDB.mostrarRes(idResto);
+		}
+		else if (e.getSource() == mntmMesasRent) {
+		    mesaDB.top3Mesas(idResto);
+		}
+		else if (e.getSource() == mntmLibres) {
+		    mesaDB.mostrarMesasL(idResto);
+		}
+		else if (e.getSource() == mntmOcupadas) {
+		    mesaDB.mostrarMesasO(idResto);
+		}
+		else if (e.getSource() == mntmReservadas) {
+		    mesaDB.mostrarMesasR(idResto);
+		}
+		else if(e.getSource()==mntmSalir) {
+			JOptionPane.showMessageDialog(null,"Volviendo a seleccion de restaurante...","Salir de la sesion", JOptionPane.INFORMATION_MESSAGE);
+			dispose();
+		}
+	}
+
+	public void mandarDatos(Restaurante restoSelec) {
+		this.restaurante=restoSelec;
+		this.idResto=restaurante.getNroRestaurante();
+		setTitle("Restaurante '"+restaurante.getNombre()+"'");
 	}
 }

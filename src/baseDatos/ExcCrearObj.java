@@ -1,8 +1,10 @@
-package logica;
+package baseDatos;
 
-public class ExceptionCreacion extends Exception{
+import java.sql.SQLException;
 
-		public ExceptionCreacion(String message) {
+public class ExcCrearObj extends SQLException{
+
+		public ExcCrearObj(String message) {
 		    super(message);
 		    revisarEstado();
 		}
@@ -10,4 +12,4 @@ public class ExceptionCreacion extends Exception{
 		public void revisarEstado() {
 		    System.out.println("Error en la creacion: " + getMessage());
 		}
-	}
+}

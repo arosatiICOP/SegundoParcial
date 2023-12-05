@@ -1,15 +1,23 @@
 package logica;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
-import interfaz.Menu;
+import baseDatos.AccesoDatos;
+import baseDatos.MesaBD;
+import interfaz.SelectResto;
 
 public class Principal {
 
-	public static void main(String[] args) throws ExceptionEstado {
+	public static void main(String[] args) throws ExceptionEstado, SQLException {
 		
-		Restaurante paucke = new Restaurante("Paucke ATENEO Inmaculada","General López 2545","Santa Fe");
-		/*
+		/*Restaurante paucke = new Restaurante("Paucke ATENEO Inmaculada","General López 2545","Santa Fe");
+		 
+		paucke.crearMesas(4, 2);
+		paucke.crearMesas(4, 4);
+		paucke.crearMesas(3, 6);
+		
+		
 		Scanner ingresoDatos = new Scanner(System.in);
 		int eleccion;
 		System.out.println("Ingrese una opcion.");
@@ -60,6 +68,24 @@ public class Principal {
 		
 		ingresoDatos.close();
 		*/
-		new Menu().setVisible(true);
+		
+		Scanner ingresoDatos = new Scanner(System.in);
+		String eleccion;
+		System.out.println("Desea crear un nuevo restaurante? Ingrese 'si' o 'no'");
+		eleccion=ingresoDatos.nextLine().toLowerCase().replaceAll("[0-9\\p{Punct}]", "");
+		switch(eleccion) {
+		case "si": Restaurante nuevoR = new Restaurante();
+		AccesoDatos acceso = new AccesoDatos();
+		MesaBD mesasI = new MesaBD();
+		acceso.agregarResto(nuevoR);
+		int idResto = nuevoR.getNroRestaurante();
+		mesasI.primerasM(idResto);
+		break;
+		case "no": System.out.println("Has ingresado 'no'.");
+		break;
+		}
+		ingresoDatos.close();
+		System.out.println("Iniciando el sistema...");
+		new SelectResto().setVisible(true);
 	}
 }

@@ -3,7 +3,7 @@ package logica;
 public class Liberada implements Estado{
 
 	public void liberar(Mesa m) throws ExceptionEstado{
-		throw new ExceptionEstado("La mesa ya esta libre antes de la solicitud.");
+		throw new ExceptionEstado("La mesa ya estaba libre antes de la solicitud.");
 	}
 
 	public void reservar(Mesa m) {
@@ -11,12 +11,16 @@ public class Liberada implements Estado{
 		m.setEstado(new Reservada());
 	}
 
-	public void ocupar(Mesa m) {
-		System.out.println("La mesa se ocupo con exito.");
-		m.setEstado(new Ocupada());	
+	public void ocupar(Mesa m) throws ExceptionEstado {
+		throw new ExceptionEstado("Primero debes reservar la mesa.");
 	}
 
-	public void mostrarEstado(Mesa m) throws ExceptionEstado {
-		System.out.println("Estoy libre.");	
+	public void mostrarEstado(Mesa m) {
+		System.out.println("Liberada.");	
 	}
+
+	public void deshabilitar(Mesa m) {
+		System.out.println("Se deshabilito con exito la mesa.");
+		m.setEstado(new Deshabilitada());
+	}	
 }

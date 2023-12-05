@@ -8,9 +8,13 @@ import java.util.Scanner;
 public class Reserva {
 
 	private Date fecha;
+	private static int idReserva=1;
+	private int nroReserva;
 	private String nombre;
 	private String apellido;
 	private int cantCom;
+	private int idResto;
+	private int idMesa;
 	private Mesa mesa;
 	
 	
@@ -18,10 +22,12 @@ public class Reserva {
 		/* Sacarle el comentario a procesos si quiere probar crear una reserva en el menu de la clase "Principal"
 		 , luego volver a comentar procesos para que funcione la opcion
 		"registrar" del submenu "reserva" de la interfaz "Menu"*/
+		nroReserva=idReserva++;
 		//procesos();
 	}
 	
 	public  void procesos() {
+		nroReserva=idReserva++;
 		Scanner ingresoDatos = new Scanner(System.in);
 		
 		SimpleDateFormat formatoFecha = new SimpleDateFormat("dd MM yyyy");
@@ -45,6 +51,7 @@ public class Reserva {
 	}
 	
 	public Reserva(Date fecha, String nombre, String apellido, int cantCom, Mesa mesa) {
+		nroReserva=idReserva++;
 	    this.fecha = fecha;
 	    this.nombre = nombre;
 	    this.apellido = apellido;
@@ -106,5 +113,37 @@ public class Reserva {
 
 	public void setMesa(Mesa mesa) {
 		this.mesa = mesa;
+	}
+
+	public int getIdResto() {
+		return idResto;
+	}
+
+	public void setIdResto(int idResto) {
+		this.idResto = idResto;
+	}
+
+	public int getIdMesa() {
+		return idMesa;
+	}
+
+	public void setIdMesa(int idMesa) {
+		this.idMesa = idMesa;
+	}
+
+	public static int getIdReserva() {
+		return idReserva;
+	}
+
+	public static void setIdReserva(int idReserva) {
+		Reserva.idReserva = idReserva;
+	}
+
+	public int getNroReserva() {
+		return nroReserva;
+	}
+
+	public void setNroReserva(int nroReserva) {
+		this.nroReserva = nroReserva;
 	}	
 }

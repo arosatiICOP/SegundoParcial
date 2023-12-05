@@ -15,7 +15,11 @@ public class Ocupada implements Estado{
 		throw new ExceptionEstado("La mesa ya se encuentra ocupada.");
 	}
 	
-	public void mostrarEstado(Mesa m) throws ExceptionEstado {
-		System.out.println("Estoy ocupada.");	
+	public void mostrarEstado(Mesa m) {
+		System.out.println("Ocupada.");	
+	}
+	
+	public void deshabilitar(Mesa m) throws ExceptionEstado {
+		throw new ExceptionEstado("La mesa se encuentra ocupada, no se puede deshabilitar.");
 	}
 }

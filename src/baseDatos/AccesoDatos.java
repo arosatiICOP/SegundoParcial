@@ -1,130 +1,104 @@
 package baseDatos;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Scanner;
+import java.util.ArrayList;
 
-import logica.Mesa;
+import logica.Restaurante;
 
 public class AccesoDatos {
+		Connection con;
 
-	Connection con;
-	Statement st;
-	ResultSet rs;
-	
-	public void abrirConexion() {	
-	try {
-		String userName="postgres";
-		String password="Agustin1810";
-		String url="jdbc:postgresql://localhost/datosRestaurante";
-			
-		con = DriverManager.getConnection(url, userName, password);
-		System.out.println("Conexión a la BD");
-		
-		}catch (Exception e) {
-			System.out.println("Error en conexión ");
-			System.out.println(e.getMessage());
-		}
-	}
-	
-	public void cerrarConexion() {	
-	try {
-		con.close();
-		System.out.println("Conexión cerrada");
-		}catch (SQLException e) {
-			System.out.println("Error al cerrar conexión");
-		}
-	}
-	
-	public void agregarResto(String nombre, String calle, String localidad) {
-        
-		 try {
-			 String sql = "INSERT INTO Restaurante (nombre, calle, localidad) VALUES"
-			 		+ "(?, ?, ?)";
-	            PreparedStatement preparedStatement = con.prepareStatement(sql);
-	            preparedStatement.setString(1, nombre);
-	            preparedStatement.setString(2, calle);
-	            preparedStatement.setString(4, localidad);
+		 public Connection abrirConexion() {
+		        try {
+		            String userName = "postgres";
+		            String password = "Agustin1810";
+		            String url = "jdbc:postgresql://localhost/datosRestaurante";
+		            con = DriverManager.getConnection(url, userName, password);
+		            System.out.println("Conexión a la Base de Datos correcta.");
+		            return con;
+		        } catch (SQLException e) {
+		            System.out.println("Error en conexión ");
+		            e.printStackTrace();
+		            return null;
+		        }
+		    }
 
+		    public void cerrarConexion() {
+		        try {
+		            if (con != null) {
+		                con.close();
+		            }
+		        } catch (SQLException e) {
+		            System.out.println("Error al cerrar conexión");
+		            e.printStackTrace();
+		        }
+		    }
+		    
+		    public void agregarResto(Restaurante resto) {
+		        abrirConexion();
+		        try {
+		            String sql = "INSERT INTO Restaurante (nombre, calle, localidad) VALUES (?, ?, ?)";
+		            PreparedStatement preparedStatement = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+		            preparedStatement.setString(1, resto.getNombre());
+		            preparedStatement.setString(2, resto.getCalle());
+		            preparedStatement.setString(3, resto.getLocalidad());
 
-	            preparedStatement.executeUpdate();
-	        } catch (SQLException e) {
-	            e.printStackTrace();
-	        } finally {
-	            try {
-	                if (con != null) {
-	                    con.close();
-	                }
-	            } catch (SQLException e) {
-	                e.printStackTrace();
-	            }
-	        }
-	    }
-	
-	public void agregarReserva(String fecha, String nombre, String apellido, int cantCom, int idMesa) {
-        
-		String sql = "INSERT INTO Reserva (fecha, nombreCliente, apellidoCliente, cantComensales, mesa_id) "
-				+ "VALUES (?, ?, ?, ?, ?)";
+		            int filasAfect = preparedStatement.executeUpdate();
 
-        try (PreparedStatement preparedStatement = con.prepareStatement(sql)) {
-            preparedStatement.setDate(1, java.sql.Date.valueOf(fecha));
-            preparedStatement.setString(2, nombre);
-            preparedStatement.setString(3, apellido);
-            preparedStatement.setInt(4, cantCom);
-            preparedStatement.setInt(5, idMesa);
+		            if (filasAfect > 0) {
+		                try (ResultSet rsResto = preparedStatement.getGeneratedKeys()) {
+		                    if (rsResto.next()) {
+		                        resto.setNroRestaurante(rsResto.getInt(1));
+		                    } else {
+		                        throw new ExcCrearObj("Error al obtener el ID del restaurante.");
+		                    }
+		                }
+		            } else {
+		                throw new ExcCrearObj("Error al crear el restaurante.");
+		            }
 
-            int filas = preparedStatement.executeUpdate();
+		        } catch (SQLException e) {
+		            e.printStackTrace();
+		        } finally {
+		            try {
+		                if (con != null) {
+		                    con.close();
+		                }
+		            } catch (SQLException e) {
+		                e.printStackTrace();
+		            }
+		            cerrarConexion();
+		        }
+		    }
 
-            if (filas > 0) {
-                System.out.println("Reserva agregada correctamente.");
-            } else {
-                System.out.println("No se pudo agregar la reserva.");
-            	}
-        	} catch (SQLException e) {
-        		e.printStackTrace();
-        }
-	}
-	
-	public void agregarMesa(int nroMesa, int capacidad, int consumo, String estado) {
+		    public ArrayList<Restaurante> obtenerRestaurantes() {
+		        ArrayList<Restaurante> listaRestaurantes = new ArrayList<>();
+		        abrirConexion();
+		        try {
+		            String sql = "SELECT * FROM Restaurante";
+		            Statement st = con.createStatement();
+		            ResultSet rs = st.executeQuery(sql);
 
-        String sql = "INSERT INTO Mesa (nroMesa, capacidad, consumo, estado) VALUES (?, ?, ?, ?)";
+		            while (rs.next()) {
+		                int nroRestaurante = rs.getInt("idRestaurante");
+		                String nombre = rs.getString("nombre");
+		                String calle = rs.getString("calle");
+		                String localidad = rs.getString("localidad");
 
-        try (PreparedStatement preparedStatement = con.prepareStatement(sql)) {
-            preparedStatement.setInt(1, nroMesa);
-            preparedStatement.setInt(2, capacidad);
-            preparedStatement.setDouble(3, consumo);
-            preparedStatement.setString(4, estado);
+		                Restaurante restaurante = new Restaurante(nroRestaurante, nombre, calle, localidad);
+		                listaRestaurantes.add(restaurante);
+		            }
+		        } catch (SQLException e) {
+		            e.printStackTrace();
+		        } finally {
+		            cerrarConexion();
+		        }
 
-            int filas = preparedStatement.executeUpdate();
-
-            if (filas > 0) {
-                System.out.println("Mesa creada correctamente.");
-            } else {
-                System.out.println("No se pudo crear la mesa.");
-            }
-        } catch (SQLException e) {
-        e.printStackTrace();
-        }
-	}
-	
-	public void borrarMesa(int nroMesa) {
-
-	    String deleteSQL = "DELETE FROM Mesa WHERE nroMesa = ?";
-	    try (PreparedStatement stDelete = con.prepareStatement(deleteSQL)) {
-	        stDelete.setInt(1, nroMesa);
-	        int filasAfectadas = stDelete.executeUpdate();
-	        if (filasAfectadas > 0) {
-	            System.out.println("Mesa eliminada exitosamente.");
-	        } else {
-	            System.out.println("No se encontró ninguna mesa con el ID proporcionado.");
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-	}	
-}
+		        return listaRestaurantes;
+		    }
+}		    

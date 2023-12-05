@@ -6,36 +6,34 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import baseDatos.AccesoDatos;
+import baseDatos.MesaBD;
 import logica.Liberada;
 import logica.Mesa;
-import logica.Reserva;
-import logica.Reservada;
+
 import logica.Restaurante;
 
-import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
-import javax.swing.AbstractButton;
-import javax.swing.ButtonGroup;
+import java.awt.Font;
 
 public class RegistrarMesa extends JFrame implements ActionListener{
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
-	private JTextField txtCap;
-	private final ButtonGroup estadoMesa = new ButtonGroup();
+	private JTextField txtCantidad;
 	private JButton btnCrearMesa;
 	private Restaurante restaurante;
-	private JRadioButton rdbtnReservada;
-	private JRadioButton rdbtnLibre;
-	private AccesoDatos inicioCon;
+	private JButton btnCancelar;
+	private MesaBD mesaDB;
+	private JTextField txtCapacidad;
+	private JLabel lblTitulo;
+	private int idResto;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -51,9 +49,9 @@ public class RegistrarMesa extends JFrame implements ActionListener{
 	}
 
 	public RegistrarMesa() {
-		setSize(350, 235);
-		setTitle("Registrar mesa");
+		setSize(350, 205);
 		setLocationRelativeTo(this);
+		mesaDB = new MesaBD();
 		procesos();
 	}
 	
@@ -64,78 +62,143 @@ public class RegistrarMesa extends JFrame implements ActionListener{
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		rdbtnReservada = new JRadioButton("Reservada");
-		estadoMesa.add(rdbtnReservada);
-		rdbtnReservada.setBounds(110, 125, 110, 25);
-		contentPane.add(rdbtnReservada);
-		
-		rdbtnLibre = new JRadioButton("Libre");
-		estadoMesa.add(rdbtnLibre);
-		rdbtnLibre.setBounds(110, 90, 110, 25);
-		contentPane.add(rdbtnLibre);
-		
-		txtCap = new JTextField();
-		txtCap.setBounds(130, 50, 85, 20);
-		contentPane.add(txtCap);
-		txtCap.setColumns(10);
-		
-		JLabel lblNewLabel = new JLabel("Crear Mesa");
-		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		lblNewLabel.setBounds(125, 15, 80, 15);
-		contentPane.add(lblNewLabel);
+		txtCantidad = new JTextField();
+		txtCantidad.setBounds(145, 50, 85, 20);
+		contentPane.add(txtCantidad);
+		txtCantidad.setColumns(10);
 		
 		JLabel lblCap = new JLabel("Capacidad");
-		lblCap.setBounds(63, 55, 55, 15);
+		lblCap.setBounds(75, 86, 55, 15);
 		contentPane.add(lblCap);
 		
 		btnCrearMesa = new JButton("Crear");
-		btnCrearMesa.setBounds(110, 160, 90, 25);
+		btnCrearMesa.setBounds(65, 125, 90, 25);
 		btnCrearMesa.addActionListener(this);
 		contentPane.add(btnCrearMesa);
+		
+		btnCancelar = new JButton("Cancelar");
+		btnCancelar.setBounds(180, 125, 90, 25);
+		btnCancelar.addActionListener(this);
+		contentPane.add(btnCancelar);
+		
+		txtCapacidad = new JTextField();
+		txtCapacidad.setColumns(10);
+		txtCapacidad.setBounds(145, 85, 85, 20);
+		contentPane.add(txtCapacidad);
+		
+		JLabel lblCantidad = new JLabel("Cantidad");
+		lblCantidad.setBounds(75, 54, 55, 15);
+		contentPane.add(lblCantidad);
+		
+		lblTitulo = new JLabel("Creacion de Mesa");
+		lblTitulo.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		lblTitulo.setBounds(110, 10, 140, 30);
+		contentPane.add(lblTitulo);
 	}
-
 
 	public void actionPerformed(ActionEvent e) {
 
 		if(e.getSource()==btnCrearMesa) {
-			crearMesa();
+			try {
+				crearMesa();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}
+		else if(e.getSource()== btnCancelar) {
+			dispose();
 		}
 	}
-
-	private void crearMesa() {
-	    String checkNumero = txtCap.getText();
-	    inicioCon.abrirConexion();
-
-	    if (checkNumero.matches("\\d+")) { // Verifica que la entrada sea un número
-	        try {
-	            Mesa nuevaM = new Mesa();
-	            int capCom = Integer.parseInt(checkNumero);
-	            nuevaM.setCapacidad(capCom);
-
-	            if (rdbtnReservada.isSelected()) {
-	                nuevaM.setEstado(new Reservada());
-	                inicioCon.agregarMesa(nuevaM.getNroMesa(), capCom, 0, "Reservada");
-	            } else {
-	                nuevaM.setEstado(new Liberada());
-	                inicioCon.agregarMesa(nuevaM.getNroMesa(), capCom, 0, "Libre");
-	            }
-
-	            restaurante.registrarEnBD(nuevaM);
-	        } catch (NumberFormatException e) {
-	            System.out.println("Error: Ingrese una capacidad valida.");
-	        }
-	    } else {
-	        System.out.println("Error: Ingrese un numero valido para la capacidad de la mesa.");
+/*
+	private void crearMesa() throws SQLException {
+	    String checkCap = txtCapacidad.getText().trim();
+	    String checkCant = txtCantidad.getText().trim();
+	    
+	    if (checkCap.isEmpty() || checkCant.isEmpty()) {
+	        System.out.println("Error: Ambos campos deben tener valores numéricos.");
+	        return;
 	    }
-	    inicioCon.cerrarConexion();
+
+	    try {
+	        int capCom = Integer.parseInt(checkCap);
+	        int cantMesas = Integer.parseInt(checkCant);
+
+	        if (capCom <= 0 || cantMesas <= 0) {
+	            System.out.println("Error: La capacidad y la cantidad de mesas deben ser valores positivos.");
+	            return;
+	        }
+
+
+	        for (int i = 0; i < cantMesas; i++) {
+	            Mesa nuevaM = new Mesa();
+	            nuevaM.setNroMesa(1);
+	            nuevaM.setCapacidad(capCom);
+	            nuevaM.setEstado(new Liberada());
+	            nuevaM.setEstadoSQL("Liberada");
+	            mesaDB.guardarMesas(nuevaM, idResto);
+	            this.restaurante.registrarEnBD(nuevaM);
+	        }
+
+	    } catch (NumberFormatException e) {
+	        System.out.println("Error: Ingrese numeros para la capacidad y la cantidad de mesas.");
+	    }
+	}*/
+	
+	private void crearMesa() throws SQLException {
+	    String checkCap = txtCapacidad.getText().trim();
+	    String checkCant = txtCantidad.getText().trim();
+
+	    if (checkCap.isEmpty() || checkCant.isEmpty()) {
+	        System.out.println("Error: Ambos campos deben tener valores numéricos.");
+	        return;
+	    }
+
+	    try {
+	        int capCom = Integer.parseInt(checkCap);
+	        int cantMesas = Integer.parseInt(checkCant);
+
+	        if (capCom <= 0 || cantMesas <= 0) {
+	            System.out.println("Error: La capacidad y la cantidad de mesas deben ser valores positivos.");
+	            return;
+	        }
+
+	        int idRestaurante = this.idResto;
+	        int ultimoNroMesa = obtenerUltimoNroMesa(idRestaurante);
+
+	        for (int i = 0; i < cantMesas; i++) {
+	            Mesa nuevaM = new Mesa(capCom, ultimoNroMesa + i + 1);
+	            mesaDB.guardarMesas(nuevaM, idRestaurante);
+	            this.restaurante.registrarEnBD(nuevaM);
+	        }
+
+	    } catch (NumberFormatException e) {
+	        System.out.println("Error: Ingrese números para la capacidad y la cantidad de mesas.");
+	    }
+	}
+
+	private int obtenerUltimoNroMesa(int idRestaurante) throws SQLException {
+	    int ultimoNro = 0;
+
+	    try {
+	        ArrayList<Mesa> mesas = mesaDB.buscarMesas(idRestaurante);
+
+	        for (Mesa mesa : mesas) {
+	            int idMesa = mesa.getNroMesa();
+	            if (idMesa > ultimoNro) {
+	                ultimoNro = idMesa;
+	            }
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        throw e;
+	    }
+
+	    return ultimoNro;
 	}
 
 	public void mandarDatos(Restaurante restaurante) {
 		this.restaurante=restaurante;
-	}
-
-	public void abrirConexion(AccesoDatos inicioCon) {
-		this.inicioCon = inicioCon;
-		
+		this.idResto=restaurante.getNroRestaurante();
+		setTitle(restaurante.getNombre());
 	}
 }

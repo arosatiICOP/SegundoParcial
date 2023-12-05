@@ -1,35 +1,57 @@
 package logica;
 
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
+
+import baseDatos.MesaBD;
+import interfaz.SelectResto;
+
 import java.util.Iterator;
 
 public class Restaurante {
-
+	
+	private static int idRestaurante=1;
+	private int nroRestaurante;
 	private String nombre;
 	private String calle;
 	private String localidad;
 	private ArrayList<Mesa> listaMesas;
 	private ArrayList<Reserva> listaReservas;
+	private MesaBD mesaDB;
+	//private boolean sePulsoNo = false;
 	
 	public Restaurante() {
 		Procesos();
+		nroRestaurante=idRestaurante++;
 		listaMesas=new ArrayList<Mesa>();
 		listaReservas=new ArrayList<Reserva>();
-		crearMesas();
+		
 	}
 	
 	public Restaurante(String nombre, String calle, String localidad){
 		this.nombre=nombre;
 		this.calle=calle;
 		this.localidad=localidad;
+		nroRestaurante=idRestaurante++;
 		listaMesas=new ArrayList<Mesa>();
 		listaReservas=new ArrayList<Reserva>();
-		crearMesas();
+		
+	}
+	
+	public Restaurante(int nroResto, String nombre, String calle, String localidad){
+		this.nombre=nombre;
+		this.calle=calle;
+		this.localidad=localidad;
+		this.nroRestaurante=nroResto;
+		listaMesas=new ArrayList<Mesa>();
+		listaReservas=new ArrayList<Reserva>();
+		
 	}
 
 	public void Procesos() {
@@ -38,11 +60,11 @@ public class Restaurante {
 		System.out.println("Ingrese nombre del restaurante.");
 		nombre=ingresoDatos.nextLine().toLowerCase().replaceAll("[0-9\\p{Punct}]", "");
 		System.out.println("Ingrese calle.");
-		calle=ingresoDatos.nextLine().toLowerCase().replaceAll("[0-9\\p{Punct}]", "");
+		calle = ingresoDatos.nextLine().toLowerCase().replaceAll("[^a-zA-Z0-9 ]", "");
 		System.out.println("Ingrese localidad.");
 		localidad=ingresoDatos.nextLine().toLowerCase().replaceAll("[0-9\\p{Punct}]", "");
 	}
-	
+	/*  noooooo
 	private void crearMesas(){
 
 	    int[] cantidad = {4, 4, 3};
@@ -55,15 +77,26 @@ public class Restaurante {
 	        }
 	    }
 	}
+	*/
 	
 	public void crearMesas(int[] cantidades, int[] capacidades) {
 	    for (int i = 0; i < cantidades.length; i++) {
 	        for (int j = 0; j < cantidades[i]; j++) {
 	            Mesa mesa = new Mesa(capacidades[i]);
-	            listaMesas.add(mesa);
+	            this.listaMesas.add(mesa);
 	        }
 	    }
 	}
+	
+	public void crearMesas(int cantidades, int capacidades, int idResto) throws SQLException {
+	    for (int i = 1; i <= cantidades; i++) {
+	            this.listaMesas.add(new Mesa(capacidades));
+	        }
+	    for (int i = 1; i<= cantidades; i++) {
+	    	mesaDB.guardarMesas(capacidades, idResto);
+	    }
+	    }
+
 
 	public void mostrarMesas() throws ExceptionEstado {
 		for(Mesa m: listaMesas) {
@@ -83,12 +116,12 @@ public class Restaurante {
 		String datoIngresado = ingresoDatos.nextLine().toLowerCase().replaceAll("[0-9\\p{Punct}]", "");
 		switch (datoIngresado) {
         case "liberada":
-            mostrarMesasLiberadas(listaMesas);
+            this.mostrarMesasLiberadas();
             break;
         case "ocupada":
-        	mostrarMesasOcupadas(listaMesas);
+        	this.mostrarMesasOcupadas();
         case "reservada":
-            mostrarMesasReservadas(listaMesas);
+            this.mostrarMesasReservadas();
             break;
         default:
             System.out.println("Opción no válida.");
@@ -130,10 +163,10 @@ public class Restaurante {
 	        }
 	    }*/
 	
-	public void mostrarMesasLiberadas(ArrayList<Mesa> listaMesas) {
+	public void mostrarMesasLiberadas() {
 		//this.listaMesas=listaMesas;
 	    System.out.println("Mesas Liberadas:");
-	    for (Mesa mesa : listaMesas) {
+	    for (Mesa mesa : this.listaMesas) {
 	        try {
 	            if (mesa.getEstado() instanceof Liberada) {
 	                mesa.mostrarMesa();
@@ -144,10 +177,10 @@ public class Restaurante {
 	    }
 	}
 	
-	private void mostrarMesasReservadas(ArrayList<Mesa> listaMesas) {
+	private void mostrarMesasReservadas() {
 		//this.listaMesas=listaMesas;
 	    System.out.println("Mesas Reservadas:");
-	    for (Mesa mesa : listaMesas) {
+	    for (Mesa mesa : this.listaMesas) {
 	        try {
 	            if (mesa.getEstado() instanceof Reservada) {
 	                mesa.mostrarMesa();
@@ -158,7 +191,7 @@ public class Restaurante {
 	    }
 	}
 	
-	private void mostrarMesasOcupadas(ArrayList<Mesa> listaMesas) {
+	private void mostrarMesasOcupadas() {
 		//this.listaMesas=listaMesas;
 	    System.out.println("Mesas Ocupadas:");
 	    for (Mesa mesa : listaMesas) {
@@ -205,7 +238,7 @@ public class Restaurante {
 	    Scanner ingresoDatos = new Scanner(System.in);
 	    Reserva nuevaR = new Reserva();
 	    listaReservas.add(nuevaR);
-	    mostrarMesasLiberadas(listaMesas);
+	    this.mostrarMesasLiberadas(); 
 	    System.out.println("Ingrese numero de la mesa deseada.");
 	    int datoIng = ingresoDatos.nextInt();
 
@@ -424,5 +457,21 @@ public class Restaurante {
 
 	public void borrarMesa(int nroMesa) {
 		listaMesas.remove(nroMesa);	
+	}
+
+	public int getIdRestaurante() {
+		return idRestaurante;
+	}
+
+	public void setIdRestaurante(int idRestaurante) {
+		this.idRestaurante = idRestaurante;
+	}
+
+	public int getNroRestaurante() {
+		return nroRestaurante;
+	}
+
+	public void setNroRestaurante(int nroRestaurante) {
+		this.nroRestaurante = nroRestaurante;
 	}
 }
